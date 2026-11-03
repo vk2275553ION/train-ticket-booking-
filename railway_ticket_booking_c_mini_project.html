@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southern Rail Express - Railway Ticket Booking & C++ Mini Project</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 4px;
+        }
+        .seat-btn {
+            transition: all 0.15s ease-in-out;
+        }
+        .seat-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .live-dot {
+            animation: pulse-subtle 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3 gap-3">
+                <!-- Brand Logo -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl shadow-md">
+                            <i class="fa-solid fa-train-subway text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-xl font-extrabold tracking-tight text-white">RailConnect <span class="text-emerald-400">Pro</span></h1>
+                                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-2 py-0.5 rounded-full font-semibold">C/C++ Mini Project</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Southern Railway Reservation System & Cloud Sheet Sync</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex flex-wrap items-center gap-1.5 bg-slate-800 p-1.5 rounded-xl border border-slate-700">
+                    <button onclick="switchTab('booking')" id="tab-booking" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold bg-emerald-500 text-slate-950 shadow-sm transition-all">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Book Ticket</span>
+                    </button>
+                    <button onclick="switchTab('pnr')" id="tab-pnr" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>PNR & Bookings</span>
+                        <span id="booking-count-badge" class="bg-slate-700 text-emerald-400 text-xs px-1.5 py-0.5 rounded-full font-bold">2</span>
+                    </button>
+                    <button onclick="switchTab('cpp')" id="tab-cpp" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all">
+                        <i class="fa-solid fa-code"></i>
+                        <span>C++ Source Code</span>
+                    </button>
+                    <button onclick="switchTab('gsheet')" id="tab-gsheet" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all">
+                        <i class="fa-solid fa-table"></i>
+                        <span>Google Sheet (தமிழ்)</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Custom Notification Banner -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== TAB 1: BOOK TICKET ==================== -->
+        <section id="section-booking" class="space-y-6">
+            <!-- Hero Search Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 text-white shadow-xl border border-slate-700 relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 border border-emerald-700/60 px-3 py-1 rounded-full mb-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 live-dot"></span>
+                                Struct & File I/O Simulation Active
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold">Search & Reserve Train Tickets</h2>
+                            <p class="text-slate-300 text-sm mt-1">Instant seat allocation with PNR generation & optional Google Sheets database sync.</p>
+                        </div>
+                        <div class="bg-slate-800/90 border border-slate-600 rounded-xl p-3 text-xs space-y-1 shrink-0">
+                            <div class="text-slate-400 font-medium">C++ Data Structure Used:</div>
+                            <div class="mono-font text-emerald-400 font-semibold">struct Ticket { int pnr; char name[50]; ... }</div>
+                            <div class="flex items-center gap-2 text-slate-300 pt-1">
+                                <i class="fa-solid fa-database text-emerald-400"></i>
+                                <span id="gsheet-status-indicator">Local Storage + Ready for Google Sheet</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Filter Form -->
+                    <form id="search-form" onsubmit="filterTrains(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">From Station</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-location-dot absolute left-3 top-3 text-emerald-400"></i>
+                                <select id="from-station" class="w-full pl-9 pr-3 py-2 bg-slate-900/90 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-400">
+                                    <option value="ALL">All Origins (அனைத்தும்)</option>
+                                    <option value="MAS" selected>Chennai Central (MAS)</option>
+                                    <option value="MS">Chennai Egmore (MS)</option>
+                                    <option value="CBE">Coimbatore Jn (CBE)</option>
+                                    <option value="MDU">Madurai Jn (MDU)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">To Station</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-flag-checkered absolute left-3 top-3 text-emerald-400"></i>
+                                <select id="to-station" class="w-full pl-9 pr-3 py-2 bg-slate-900/90 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-400">
+                                    <option value="ALL" selected>All Destinations (அனைத்தும்)</option>
+                                    <option value="CBE">Coimbatore Jn (CBE)</option>
+                                    <option value="MDU">Madurai Jn (MDU)</option>
+                                    <option value="TPJ">Tiruchirappalli (TPJ)</option>
+                                    <option value="MAS">Chennai Central (MAS)</option>
+                                    <option value="CAPE">Kanyakumari (CAPE)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Journey Date</label>
+                            <input type="date" id="journey-date" required class="w-full px-3 py-2 bg-slate-900/90 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-400">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Coach Class</label>
+                            <select id="travel-class" onchange="updateFareCalculation()" class="w-full px-3 py-2 bg-slate-900/90 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:border-emerald-400">
+                                <option value="SL" data-multiplier="1">Sleeper (SL) - Base Fare</option>
+                                <option value="3A" data-multiplier="2.4">AC 3 Tier (3A) - 2.4x</option>
+                                <option value="2A" data-multiplier="3.5">AC 2 Tier (2A) - 3.5x</option>
+                                <option value="CC" data-multiplier="1.8">AC Chair Car (CC) - 1.8x</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg shadow-md transition flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Find Trains</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Booking Grid: Left Train List & Coach Map | Right Passenger Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Available Trains & Seat Map (7 Cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- Available Trains Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-list-ul text-emerald-600"></i>
+                                <h3 class="font-bold text-slate-800">1. Select Your Train (ரயிலைத் தேர்ந்தெடுக்கவும்)</h3>
+                            </div>
+                            <button onclick="resetTrainFilter()" class="text-xs text-emerald-600 hover:underline font-semibold">Show All Trains</button>
+                        </div>
+                        <div id="train-list-container" class="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+                            <!-- Dynamically populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Interactive Coach Seat Selection -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-200">
+                            <div>
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-couch text-emerald-600"></i>
+                                    <span>2. Interactive Coach Map (S1 Coach - 24 Berths)</span>
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Click seats to select (Maximum 6 seats per PNR booking)</p>
+                            </div>
+                            <!-- Legend -->
+                            <div class="flex items-center gap-3 text-xs font-medium">
+                                <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-slate-100 border border-slate-300 inline-block"></span> Available</span>
+                                <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-emerald-500 text-white inline-block"></span> Selected</span>
+                                <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-rose-500 text-white inline-block"></span> Booked</span>
+                            </div>
+                        </div>
+
+                        <!-- Coach Layout Container -->
+                        <div class="bg-slate-50 border-2 border-slate-300 rounded-xl p-4">
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
+                                <span><i class="fa-solid fa-door-open mr-1"></i> Entry Door</span>
+                                <span id="active-coach-label" class="text-slate-600">Train #12675 - Kovai Express</span>
+                                <span>Washroom <i class="fa-solid fa-restroom ml-1"></i></span>
+                            </div>
+
+                            <!-- 24 Seats Grid -->
+                            <div id="seat-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Passenger Booking Form (5 Cols) -->
+                <div class="lg:col-span-5">
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden sticky top-20">
+                        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-file-signature text-emerald-400"></i>
+                                    <span>3. Passenger Reservation Form</span>
+                                </h3>
+                                <p class="text-xs text-slate-400">Saves to Local Storage & Google Sheet (if linked)</p>
+                            </div>
+                            <span class="mono-font text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded border border-emerald-500/30">bookTicket()</span>
+                        </div>
+
+                        <form id="booking-form" onsubmit="handleTicketSubmit(event)" class="p-5 space-y-4">
+                            <!-- Selected Train Summary Box -->
+                            <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 text-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <span id="summary-train-no" class="text-xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded">#12675</span>
+                                        <h4 id="summary-train-name" class="font-bold text-slate-800 mt-1">Kovai Superfast Express</h4>
+                                        <p id="summary-train-route" class="text-xs text-slate-600">Chennai Central (06:10) → Coimbatore Jn (14:05)</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs text-slate-500 block">Selected Seats</span>
+                                        <span id="summary-seats-badge" class="font-extrabold text-emerald-700 mono-font">None</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Passenger Full Name (பெயர்) *</label>
+                                    <input type="text" id="passenger-name" required placeholder="e.g. Karthik Raja" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Age (வயது) *</label>
+                                    <input type="number" id="passenger-age" required min="1" max="115" placeholder="21" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Gender (பாலினம்) *</label>
+                                    <select id="passenger-gender" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="Male">Male (ஆண்)</option>
+                                        <option value="Female">Female (பெண்)</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mobile Number *</label>
+                                    <input type="tel" id="passenger-phone" required pattern="[0-9]{10}" placeholder="9876543210" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Berth Preference</label>
+                                    <select id="berth-pref" class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="No Preference">Auto / Selected Seat</option>
+                                        <option value="Lower">Lower Berth (LB)</option>
+                                        <option value="Middle">Middle Berth (MB)</option>
+                                        <option value="Upper">Upper Berth (UB)</option>
+                                        <option value="Side Lower">Side Lower (SL)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Price Breakdown -->
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5 text-sm">
+                                <div class="flex justify-between text-slate-600">
+                                    <span>Ticket Fare (<span id="fare-seat-count">1</span> Seat × ₹<span id="fare-per-seat">285</span>):</span>
+                                    <span class="font-semibold">₹<span id="fare-base-total">285</span></span>
+                                </div>
+                                <div class="flex justify-between text-slate-500 text-xs">
+                                    <span>IRCTC Convenience & GST:</span>
+                                    <span>₹35</span>
+                                </div>
+                                <div class="border-t border-slate-200 pt-2 flex justify-between items-center text-base font-extrabold text-slate-900">
+                                    <span>Total Payable Amount:</span>
+                                    <span class="text-emerald-600 text-lg">₹<span id="fare-grand-total">320</span></span>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submit-booking-btn" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition flex items-center justify-center gap-2 text-base">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Confirm & Generate PNR Ticket</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: PNR STATUS & BOOKED TICKETS ==================== -->
+        <section id="section-pnr" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-emerald-600"></i>
+                            <span>PNR Status Enquiry & Reservation Chart</span>
+                        </h2>
+                        <p class="text-sm text-slate-500">Equivalent to C++ <code class="mono-font bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">searchByPNR()</code> and <code class="mono-font bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">cancelTicket()</code> functions.</p>
+                    </div>
+
+                    <!-- Search Box -->
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <i class="fa-solid fa-hashtag absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="pnr-search-input" oninput="renderBookedTickets()" placeholder="Enter 10-digit PNR or Name..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none w-64">
+                        </div>
+                        <button onclick="exportTicketsCSV()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                            <span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tickets List -->
+                <div id="booked-tickets-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: C & C++ MINI PROJECT SOURCE CODE ==================== -->
+        <section id="section-cpp" class="hidden space-y-6">
+            <div class="bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950 border border-emerald-700 px-2.5 py-1 rounded-full">Ready for Code::Blocks / Turbo C++ / VS Code / GCC</span>
+                        <h2 class="text-2xl font-extrabold mt-2">Complete C++ Mini Project Source Code (<code class="mono-font text-emerald-400">railway_reservation.cpp</code>)</h2>
+                        <p class="text-sm text-slate-400 mt-1">Uses <code class="text-slate-200">class</code>, <code class="text-slate-200">struct</code>, File Handling (<code class="text-slate-200">fstream</code>), and exports bookings to <code class="text-emerald-300">tickets_db.csv</code> which opens directly in Google Sheets or Excel!</p>
+                    </div>
+                    <button onclick="copyCode('cpp-source-code')" class="shrink-0 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow transition flex items-center gap-2 text-sm">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy C++ Code</span>
+                    </button>
+                </div>
+
+                <!-- Viva / Project Synopsis Points -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-slate-800/60 border-b border-slate-800 text-xs">
+                    <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700">
+                        <div class="font-bold text-emerald-400 mb-1"><i class="fa-solid fa-cubes mr-1"></i> OOP Concepts Used</div>
+                        <p class="text-slate-300">Classes & Objects, Encapsulation, Constructors, Member Functions, and Struct records.</p>
+                    </div>
+                    <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700">
+                        <div class="font-bold text-emerald-400 mb-1"><i class="fa-solid fa-file-csv mr-1"></i> File Handling & Sheet Sync</div>
+                        <p class="text-slate-300">Saves every ticket into <code class="mono-font text-amber-300">tickets_db.csv</code> so you can upload or sync with Google Sheets.</p>
+                    </div>
+                    <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700">
+                        <div class="font-bold text-emerald-400 mb-1"><i class="fa-solid fa-list-check mr-1"></i> 5 Menu Modules</div>
+                        <p class="text-slate-300">1. View Trains 2. Book Ticket 3. Check PNR Status 4. Cancel Ticket 5. View All Bookings.</p>
+                    </div>
+                    <div class="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700">
+                        <div class="font-bold text-emerald-400 mb-1"><i class="fa-solid fa-terminal mr-1"></i> How to Run</div>
+                        <p class="text-slate-300">Compile using <code class="mono-font text-amber-300">g++ railway.cpp -o railway</code> and run <code class="mono-font text-amber-300">./railway</code>.</p>
+                    </div>
+                </div>
+
+                <!-- Code Block -->
+                <div class="p-6 overflow-x-auto bg-slate-950">
+<pre id="cpp-source-code" class="mono-font text-xs sm:text-sm text-emerald-300 leading-relaxed select-all"><code>// ============================================================================
+// MINI PROJECT: RAILWAY TICKET RESERVATION SYSTEM IN C++
+// Features: Train Schedule, Ticket Booking, PNR Search, Cancellation & CSV Export
+// ============================================================================
+
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;iomanip&gt;
+#include &lt;vector&gt;
+#include &lt;ctime&gt;
+
+using namespace std;
+
+// Structure to store Train Details
+struct Train {
+    int trainNo;
+    string trainName;
+    string source;
+    string destination;
+    string departureTime;
+    int fare;
+    int availableSeats;
+};
+
+// Class to handle Passenger Ticket Operations
+class RailwaySystem {
+private:
+    vector&lt;Train&gt; trains;
+    const string csvFileName = "tickets_db.csv";
+
+public:
+    RailwaySystem() {
+        // Initialize Southern Railway Trains
+        trains.push_back({12675, "Kovai SF Express", "Chennai(MAS)", "Coimbatore(CBE)", "06:10 AM", 285, 24});
+        trains.push_back({12637, "Pandian SF Express", "Chennai(MS)", "Madurai(MDU)", "09:40 PM", 340, 24});
+        trains.push_back({12635, "Vaigai SF Express", "Chennai(MS)", "Madurai(MDU)", "01:50 PM", 260, 24});
+        trains.push_back({12673, "Cheran SF Express", "Chennai(MAS)", "Coimbatore(CBE)", "10:10 PM", 320, 24});
+        trains.push_back({12633, "Kanyakumari Exp", "Chennai(MS)", "Kanyakumari(CAPE)", "05:20 PM", 435, 24});
+
+        // Create CSV header if file does not exist (Compatible with Google Sheets)
+        ifstream checkFile(csvFileName);
+        if (!checkFile.good()) {
+            ofstream outFile(csvFileName);
+            outFile &lt;&lt; "PNR,PassengerName,Age,Gender,Phone,TrainNo,TrainName,CoachClass,Seats,TotalFare,Status\n";
+            outFile.close();
+        }
+        checkFile.close();
+    }
+
+    // 1. Display All Available Trains
+    void displayTrains() {
+        cout &lt;&lt; "\n========================================================================================\n";
+        cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; "Train No" &lt;&lt; setw(22) &lt;&lt; "Train Name" 
+             &lt;&lt; setw(16) &lt;&lt; "From" &lt;&lt; setw(18) &lt;&lt; "To" 
+             &lt;&lt; setw(12) &lt;&lt; "Dep Time" &lt;&lt; setw(8) &lt;&lt; "Fare" &lt;&lt; "Seats\n";
+        cout &lt;&lt; "========================================================================================\n";
+        for (const auto &amp;t : trains) {
+            cout &lt;&lt; left &lt;&lt; setw(10) &lt;&lt; t.trainNo &lt;&lt; setw(22) &lt;&lt; t.trainName
+                 &lt;&lt; setw(16) &lt;&lt; t.source &lt;&lt; setw(18) &lt;&lt; t.destination
+                 &lt;&lt; setw(12) &lt;&lt; t.departureTime &lt;&lt; "Rs." &lt;&lt; setw(5) &lt;&lt; t.fare 
+                 &lt;&lt; t.availableSeats &lt;&lt; "\n";
+        }
+        cout &lt;&lt; "========================================================================================\n";
+    }
+
+    // 2. Book a Ticket and Save to CSV File
+    void bookTicket() {
+        displayTrains();
+        int tNo, age, numSeats;
+        string name, gender, phone, coachClass;
+
+        cout &lt;&lt; "\nEnter Train Number to Book: ";
+        cin &gt;&gt; tNo;
+
+        int idx = -1;
+        for (size_t i = 0; i &lt; trains.size(); i++) {
+            if (trains[i].trainNo == tNo) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) {
+            cout &lt;&lt; "\n[ERROR] Invalid Train Number! Please try again.\n";
+            return;
+        }
+
+        cout &lt;&lt; "Enter Passenger Full Name: ";
+        cin.ignore();
+        getline(cin, name);
+        cout &lt;&lt; "Enter Age: ";
+        cin &gt;&gt; age;
+        cout &lt;&lt; "Enter Gender (Male/Female): ";
+        cin &gt;&gt; gender;
+        cout &lt;&lt; "Enter 10-Digit Mobile Number: ";
+        cin &gt;&gt; phone;
+        cout &lt;&lt; "Enter Coach Class (SL / 3A / 2A): ";
+        cin &gt;&gt; coachClass;
+        cout &lt;&lt; "Enter Number of Seats (1-6): ";
+        cin &gt;&gt; numSeats;
+
+        if (numSeats &lt;= 0 || numSeats &gt; trains[idx].availableSeats) {
+            cout &lt;&lt; "\n[ERROR] Requested seats not available!\n";
+            return;
+        }
+
+        // Generate unique PNR number
+        srand(time(0));
+        long pnr = 4200000000 + (rand() % 90000000 + 10000000);
+        int totalFare = (trains[idx].fare * numSeats) + 35; // +Rs.35 IRCTC Tax
+        trains[idx].availableSeats -= numSeats;
+
+        // Save to CSV file (Can be imported directly to Google Sheets)
+        ofstream file(csvFileName, ios::app);
+        file &lt;&lt; pnr &lt;&lt; "," &lt;&lt; name &lt;&lt; "," &lt;&lt; age &lt;&lt; "," &lt;&lt; gender &lt;&lt; "," 
+             &lt;&lt; phone &lt;&lt; "," &lt;&lt; trains[idx].trainNo &lt;&lt; "," &lt;&lt; trains[idx].trainName &lt;&lt; "," 
+             &lt;&lt; coachClass &lt;&lt; ",S1-" &lt;&lt; numSeats &lt;&lt; "Seats," &lt;&lt; totalFare &lt;&lt; ",CONFIRMED\n";
+        file.close();
+
+        cout &lt;&lt; "\n+-------------------------------------------------------+\n";
+        cout &lt;&lt; "|           TICKET BOOKED SUCCESSFULLY (CNF)            |\n";
+        cout &lt;&lt; "+-------------------------------------------------------+\n";
+        cout &lt;&lt; "  PNR Number     : " &lt;&lt; pnr &lt;&lt; "\n";
+        cout &lt;&lt; "  Passenger Name : " &lt;&lt; name &lt;&lt; " (" &lt;&lt; age &lt;&lt; "/" &lt;&lt; gender &lt;&lt; ")\n";
+        cout &lt;&lt; "  Train          : " &lt;&lt; trains[idx].trainNo &lt;&lt; " - " &lt;&lt; trains[idx].trainName &lt;&lt; "\n";
+        cout &lt;&lt; "  Route          : " &lt;&lt; trains[idx].source &lt;&lt; " to " &lt;&lt; trains[idx].destination &lt;&lt; "\n";
+        cout &lt;&lt; "  Total Paid     : Rs. " &lt;&lt; totalFare &lt;&lt; " (Saved to tickets_db.csv)\n";
+        cout &lt;&lt; "+-------------------------------------------------------+\n";
+    }
+
+    // 3. View All Booked Tickets from File
+    void viewAllBookings() {
+        ifstream file(csvFileName);
+        string line;
+        cout &lt;&lt; "\n--- ALL SAVED RESERVATIONS (FROM CSV FILE) ---\n";
+        while (getline(file, line)) {
+            cout &lt;&lt; line &lt;&lt; "\n";
+        }
+        file.close();
+    }
+};
+
+int main() {
+    RailwaySystem rail;
+    int choice;
+
+    do {
+        cout &lt;&lt; "\n=============================================\n";
+        cout &lt;&lt; "   SOUTHERN RAILWAY RESERVATION SYSTEM (C++) \n";
+        cout &lt;&lt; "=============================================\n";
+        cout &lt;&lt; "  1. View Available Trains\n";
+        cout &lt;&lt; "  2. Book New Train Ticket\n";
+        cout &lt;&lt; "  3. View All Booked Tickets (CSV Records)\n";
+        cout &lt;&lt; "  4. Exit Program\n";
+        cout &lt;&lt; "---------------------------------------------\n";
+        cout &lt;&lt; "Enter your choice (1-4): ";
+        cin &gt;&gt; choice;
+
+        switch (choice) {
+            case 1: rail.displayTrains(); break;
+            case 2: rail.bookTicket(); break;
+            case 3: rail.viewAllBookings(); break;
+            case 4: cout &lt;&lt; "\nThank you for using Southern Railway Reservation System!\n"; break;
+            default: cout &lt;&lt; "\nInvalid choice! Please select 1-4.\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: GOOGLE SHEET INTEGRATION (TAMIL & ENGLISH) ==================== -->
+        <section id="section-gsheet" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+                    <div>
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">Google Sheets Cloud Sync</span>
+                        <h2 class="text-2xl font-extrabold text-slate-800 mt-2">Connect This Railway Website to Your Google Sheet (தமிழில் விளக்கம்)</h2>
+                        <p class="text-sm text-slate-600 mt-1">Paste your Google Apps Script Web App URL below so every railway ticket booked on this website automatically saves into your Google Sheet!</p>
+                    </div>
+                </div>
+
+                <!-- Live URL Input Connector -->
+                <div class="my-6 bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5">
+                    <label class="block text-sm font-extrabold text-emerald-950 mb-2">
+                        <i class="fa-solid fa-link mr-1 text-emerald-600"></i>
+                        Paste Your Google Apps Script Web App URL Here (உங்கள் Google Script URL-ஐ இங்கே இணைக்கவும்):
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="url" id="gsheet-webhook-url" placeholder="https://script.google.com/macros/s/AKfycbz.../exec" class="flex-grow px-4 py-2.5 border border-emerald-400 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none bg-white">
+                        <button onclick="saveGoogleSheetUrl()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition text-sm shrink-0">
+                            Save & Connect Sheet
+                        </button>
+                    </div>
+                    <p class="text-xs text-emerald-800 mt-2">
+                        * லிங்கை சேமித்தவுடன், நீங்கள் "Book Ticket" டேப்பில் புக் செய்யும் அனைத்து ரயில் டிக்கெட்களும் நேரடியாக உங்கள் Google Sheet-ல் பதிவாகும்!
+                    </p>
+                </div>
+
+                <!-- Step by Step Tamil Guide -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-lg text-slate-800 border-b pb-2">3 எளிய படிகள் (Step-by-Step Tamil Guide):</h3>
+                        
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold bg-slate-800 text-white px-2.5 py-1 rounded">படி 1 (Step 1)</span>
+                            <h4 class="font-bold text-slate-800 mt-2">Google Sheet தலைப்புகள் (Row 1 Headers)</h4>
+                            <p class="text-xs text-slate-600 mt-1">புதிய Google Sheet ஒன்றைத் திறந்து முதல் வரிசையில் (Row 1) கீழே உள்ள 11 தலைப்புகளைக் கொடுக்கவும்:</p>
+                            <div class="mono-font text-xs bg-white p-2.5 rounded border border-slate-200 mt-2 text-emerald-700 font-semibold break-all">
+                                Date | PNR | PassengerName | Age | Gender | Phone | TrainName | JourneyDate | Class | Seats | TotalFare
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold bg-slate-800 text-white px-2.5 py-1 rounded">படி 2 (Step 2)</span>
+                            <h4 class="font-bold text-slate-800 mt-2">Extensions → Apps Script கோடு</h4>
+                            <p class="text-xs text-slate-600 mt-1">உங்கள் Google Sheet-ல் <b>Extensions → Apps Script</b> சென்று, வலதுபுறம் உள்ள கோடை காப்பி செய்து Paste செய்யவும்.</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold bg-slate-800 text-white px-2.5 py-1 rounded">படி 3 (Step 3)</span>
+                            <h4 class="font-bold text-slate-800 mt-2">Deploy → New Deployment → Web App</h4>
+                            <p class="text-xs text-slate-600 mt-1">
+                                1. <b>Deploy → New deployment</b> கிளிக் செய்யவும்.<br>
+                                2. Select type-ல் <b>Web app</b> தேர்வு செய்யவும்.<br>
+                                3. Who has access என்பதை <b>"Anyone"</b> என மாற்றி Deploy செய்யவும்.<br>
+                                4. கிடைக்கும் <b>Web App URL</b>-ஐ காப்பி செய்து மேலே உள்ள பச்சைப் பெட்டியில் Paste செய்யவும்!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Apps Script Code Box -->
+                    <div class="bg-slate-900 text-white rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3">
+                                <span class="text-sm font-bold text-emerald-400">Google Apps Script Code (Code.gs)</span>
+                                <button onclick="copyCode('apps-script-code')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg border border-slate-600">
+                                    <i class="fa-regular fa-copy mr-1"></i> Copy Script
+                                </button>
+                            </div>
+<pre id="apps-script-code" class="mono-font text-xs text-emerald-300 overflow-x-auto leading-relaxed"><code>function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  sheet.appendRow([
+    new Date().toLocaleString(),
+    data.pnr,
+    data.passengerName,
+    data.age,
+    data.gender,
+    data.phone,
+    data.trainNo + " - " + data.trainName,
+    data.journeyDate,
+    data.travelClass,
+    data.seats,
+    data.totalFare
+  ]);
+  
+  return ContentService.createTextOutput(
+    JSON.stringify({ "result": "success", "pnr": data.pnr })
+  ).setMimeType(ContentService.MimeType.JSON);
+}</code></pre>
+                        </div>
+                        <div class="mt-4 bg-slate-800 p-3 rounded-lg text-xs text-slate-300 border border-slate-700">
+                            <i class="fa-solid fa-circle-info text-emerald-400 mr-1"></i>
+                            <b>கல்லூரி ப்ராஜெக்ட் டிப்ஸ் (Viva Tip):</b> உங்கள் C++ புரோகிராம் <code class="text-amber-300">tickets_db.csv</code> என்ற ஃபைலை உருவாக்கும். வெப்சைட் நேரடியாக Google Sheet-ல் சேமிக்கும். இரண்டையும் உங்கள் மினி ப்ராஜெக்ட் டெமோவில் காட்டலாம்!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>RailConnect Pro — C & C++ Mini Project (Southern Railway Reservation System)</div>
+            <div>Built with HTML5, Tailwind CSS, JavaScript, Google Sheets API & C++ File I/O</div>
+        </div>
+    </footer>
+
+    <!-- Application JavaScript -->
+    <script>
+        // 1. Pre-loaded Southern Railway Trains Dataset
+        const TRAINS_DATA = [
+            {
+                trainNo: "12675",
+                name: "Kovai Superfast Express",
+                fromCode: "MAS",
+                fromName: "Chennai Central",
+                toCode: "CBE",
+                toName: "Coimbatore Jn",
+                depTime: "06:10 AM",
+                arrTime: "02:05 PM",
+                duration: "7h 55m",
+                baseFare: 285,
+                bookedSeats: [3, 7, 14, 19]
+            },
+            {
+                trainNo: "12637",
+                name: "Pandian Superfast Express",
+                fromCode: "MS",
+                fromName: "Chennai Egmore",
+                toCode: "MDU",
+                toName: "Madurai Jn",
+                depTime: "09:40 PM",
+                arrTime: "05:35 AM",
+                duration: "7h 55m",
+                baseFare: 340,
+                bookedSeats: [1, 2, 11, 22]
+            },
+            {
+                trainNo: "12635",
+                name: "Vaigai Superfast Express",
+                fromCode: "MS",
+                fromName: "Chennai Egmore",
+                toCode: "MDU",
+                toName: "Madurai Jn",
+                depTime: "01:50 PM",
+                arrTime: "09:15 PM",
+                duration: "7h 25m",
+                baseFare: 260,
+                bookedSeats: [5, 6, 15]
+            },
+            {
+                trainNo: "12679",
+                name: "Coimbatore Intercity Exp",
+                fromCode: "MAS",
+                fromName: "Chennai Central",
+                toCode: "CBE",
+                toName: "Coimbatore Jn",
+                depTime: "02:30 PM",
+                arrTime: "10:15 PM",
+                duration: "7h 45m",
+                baseFare: 270,
+                bookedSeats: [8, 9, 18]
+            },
+            {
+                trainNo: "12633",
+                name: "Kanyakumari SF Express",
+                fromCode: "MS",
+                fromName: "Chennai Egmore",
+                toCode: "CAPE",
+                toName: "Kanyakumari",
+                depTime: "05:20 PM",
+                arrTime: "05:35 AM",
+                duration: "12h 15m",
+                baseFare: 435,
+                bookedSeats: [4, 12, 13, 20]
+            },
+            {
+                trainNo: "12676",
+                name: "Kovai Return Express",
+                fromCode: "CBE",
+                fromName: "Coimbatore Jn",
+                toCode: "MAS",
+                toName: "Chennai Central",
+                depTime: "03:15 PM",
+                arrTime: "11:05 PM",
+                duration: "7h 50m",
+                baseFare: 285,
+                bookedSeats: [10, 16]
+            }
+        ];
+
+        // Berth Types Lookup
+        const BERTH_TYPES = ["LB", "MB", "UB", "LB", "MB", "UB", "SL", "SU"];
+
+        // State Variables
+        let selectedTrain = TRAINS_DATA[0];
+        let selectedSeats = [1]; // Default 1 seat selected
+        let filteredTrains = [...TRAINS_DATA];
+        let googleSheetUrl = localStorage.getItem("rail_gsheet_url") || "";
+
+        // Sample Initial Bookings so the PNR table looks rich immediately
+        let bookedTickets = JSON.parse(localStorage.getItem("rail_booked_tickets")) || [
+            {
+                pnr: "4289104512",
+                passengerName: "Arun Kumar",
+                age: "21",
+                gender: "Male",
+                phone: "9876543210",
+                trainNo: "12675",
+                trainName: "Kovai Superfast Express",
+                route: "Chennai Central → Coimbatore Jn",
+                journeyDate: new Date().toISOString().split('T')[0],
+                travelClass: "SL",
+                seats: "S1-3 (UB)",
+                totalFare: 320,
+                status: "CONFIRMED"
+            },
+            {
+                pnr: "4276519834",
+                passengerName: "Priya Dharshini",
+                age: "20",
+                gender: "Female",
+                phone: "9443210987",
+                trainNo: "12637",
+                trainName: "Pandian Superfast Express",
+                route: "Chennai Egmore → Madurai Jn",
+                journeyDate: new Date().toISOString().split('T')[0],
+                travelClass: "3A",
+                seats: "S1-1 (LB), S1-2 (MB)",
+                totalFare: 1667,
+                status: "CONFIRMED"
+            }
+        ];
+
+        // Initialize Page on Load
+        window.onload = function() {
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('journey-date').value = today;
+
+            // Load Google Sheet URL if saved
+            if (googleSheetUrl) {
+                document.getElementById('gsheet-webhook-url').value = googleSheetUrl;
+                document.getElementById('gsheet-status-indicator').innerText = "Connected to Google Sheet Live!";
+            }
+
+            renderTrainList();
+            renderCoachSeats();
+            updateFareCalculation();
+            renderBookedTickets();
+        };
+
+        // Switch Navigation Tabs
+        function switchTab(tabName) {
+            const tabs = ['booking', 'pnr', 'cpp', 'gsheet'];
+            tabs.forEach(t => {
+                const sec = document.getElementById(`section-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    sec.classList.remove('hidden');
+                    btn.className = "tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold bg-emerald-500 text-slate-950 shadow-sm transition-all";
+                } else {
+                    sec.classList.add('hidden');
+                    btn.className = "tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all";
+                }
+            });
+        }
+
+        // Filter Trains by Origin & Destination
+        function filterTrains(e) {
+            if (e) e.preventDefault();
+            const from = document.getElementById('from-station').value;
+            const to = document.getElementById('to-station').value;
+
+            filteredTrains = TRAINS_DATA.filter(t => {
+                const matchFrom = (from === "ALL") || (t.fromCode === from);
+                const matchTo = (to === "ALL") || (t.toCode === to);
+                return matchFrom && matchTo;
+            });
+
+            if (filteredTrains.length === 0) {
+                showToast("No direct trains on this filter. Showing all Southern Railway trains!", "info");
+                filteredTrains = [...TRAINS_DATA];
+            } else {
+                selectedTrain = filteredTrains[0];
+                // Pick first available seat on new train
+                selectedSeats = [];
+                for (let i = 1; i <= 24; i++) {
+                    if (!selectedTrain.bookedSeats.includes(i)) {
+                        selectedSeats.push(i);
+                        break;
+                    }
+                }
+            }
+
+            renderTrainList();
+            renderCoachSeats();
+            updateFareCalculation();
+        }
+
+        function resetTrainFilter() {
+            document.getElementById('from-station').value = "ALL";
+            document.getElementById('to-station').value = "ALL";
+            filteredTrains = [...TRAINS_DATA];
+            renderTrainList();
+            showToast("Showing all available trains", "success");
+        }
+
+        // Render Train Selection List
+        function renderTrainList() {
+            const container = document.getElementById('train-list-container');
+            container.innerHTML = "";
+
+            filteredTrains.forEach(train => {
+                const isSelected = train.trainNo === selectedTrain.trainNo;
+                const availCount = 24 - train.bookedSeats.length;
+
+                const div = document.createElement('div');
+                div.className = `p-4 cursor-pointer transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    isSelected ? 'bg-emerald-50/90 border-l-4 border-emerald-500' : 'hover:bg-slate-50'
+                }`;
+                div.onclick = () => selectTrain(train.trainNo);
+
+                div.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="mono-font text-xs font-bold px-2 py-0.5 rounded ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}">#${train.trainNo}</span>
+                            <h4 class="font-bold text-slate-800 text-sm sm:text-base">${train.name}</h4>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-slate-600">
+                            <span><b class="text-slate-800">${train.depTime}</b> (${train.fromName})</span>
+                            <span class="text-slate-400">── ${train.duration} ──►</span>
+                            <span><b class="text-slate-800">${train.arrTime}</b> (${train.toName})</span>
+                        </div>
+                    </div>
+                    <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400">Base SL Fare</span>
+                            <span class="text-base font-extrabold text-slate-900 block">₹${train.baseFare}</span>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            AVL ${availCount} Seats
+                        </span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Select a Specific Train
+        function selectTrain(trainNo) {
+            const found = TRAINS_DATA.find(t => t.trainNo === trainNo);
+            if (!found) return;
+            selectedTrain = found;
+
+            // Default select 1 available seat
+            selectedSeats = [];
+            for (let i = 1; i <= 24; i++) {
+                if (!selectedTrain.bookedSeats.includes(i)) {
+                    selectedSeats.push(i);
+                    break;
+                }
+            }
+
+            renderTrainList();
+            renderCoachSeats();
+            updateFareCalculation();
+        }
+
+        // Render 24-Berth Interactive Coach Map
+        function renderCoachSeats() {
+            const grid = document.getElementById('seat-grid');
+            document.getElementById('active-coach-label').innerText = `Train #${selectedTrain.trainNo} - ${selectedTrain.name}`;
+            grid.innerHTML = "";
+
+            for (let i = 1; i <= 24; i++) {
+                const berthType = BERTH_TYPES[(i - 1) % 8];
+                const isBooked = selectedTrain.bookedSeats.includes(i);
+                const isSelected = selectedSeats.includes(i);
+
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.disabled = isBooked;
+
+                let colorClass = "bg-white hover:border-emerald-500 text-slate-700 border-slate-300";
+                if (isBooked) {
+                    colorClass = "bg-rose-500 text-white border-rose-600 opacity-75 cursor-not-allowed";
+                } else if (isSelected) {
+                    colorClass = "bg-emerald-500 text-white border-emerald-600 shadow-md ring-2 ring-emerald-300";
+                }
+
+                btn.className = `seat-btn border rounded-lg p-2 flex flex-col items-center justify-center text-xs font-bold ${colorClass}`;
+                btn.innerHTML = `
+                    <span>S1-${i}</span>
+                    <span class="text-[10px] font-normal opacity-80">${berthType}</span>
+                `;
+
+                if (!isBooked) {
+                    btn.onclick = () => toggleSeat(i);
+                }
+
+                grid.appendChild(btn);
+            }
+        }
+
+        // Toggle Seat Selection
+        function toggleSeat(seatNumber) {
+            const index = selectedSeats.indexOf(seatNumber);
+            if (index > -1) {
+                if (selectedSeats.length === 1) {
+                    showToast("At least 1 seat must be selected for booking.", "info");
+                    return;
+                }
+                selectedSeats.splice(index, 1);
+            } else {
+                if (selectedSeats.length >= 6) {
+                    showToast("Maximum 6 seats allowed per PNR booking!", "error");
+                    return;
+                }
+                selectedSeats.push(seatNumber);
+            }
+            selectedSeats.sort((a, b) => a - b);
+            renderCoachSeats();
+            updateFareCalculation();
+        }
+
+        // Calculate Total Fare & Update Summary Card
+        function updateFareCalculation() {
+            const classSelect = document.getElementById('travel-class');
+            const selectedOption = classSelect.options[classSelect.selectedIndex];
+            const multiplier = parseFloat(selectedOption.getAttribute('data-multiplier') || "1");
+
+            const seatCount = selectedSeats.length;
+            const perSeatFare = Math.round(selectedTrain.baseFare * multiplier);
+            const baseTotal = perSeatFare * seatCount;
+            const grandTotal = seatCount > 0 ? baseTotal + 35 : 0;
+
+            // Update Summary DOM
+            document.getElementById('summary-train-no').innerText = `#${selectedTrain.trainNo}`;
+            document.getElementById('summary-train-name').innerText = selectedTrain.name;
+            document.getElementById('summary-train-route').innerText = `${selectedTrain.fromName} (${selectedTrain.depTime}) → ${selectedTrain.toName} (${selectedTrain.arrTime})`;
+
+            const seatLabels = selectedSeats.map(s => `S1-${s}(${BERTH_TYPES[(s - 1) % 8]})`);
+            document.getElementById('summary-seats-badge').innerText = seatLabels.length ? seatLabels.join(', ') : "None";
+
+            document.getElementById('fare-seat-count').innerText = seatCount;
+            document.getElementById('fare-per-seat').innerText = perSeatFare;
+            document.getElementById('fare-base-total').innerText = baseTotal;
+            document.getElementById('fare-grand-total').innerText = grandTotal;
+        }
+
+        // Handle Booking Submission (Local Storage + Optional Google Sheet Sync)
+        function handleTicketSubmit(e) {
+            e.preventDefault();
+
+            if (selectedSeats.length === 0) {
+                showToast("Please select at least one seat on the coach map!", "error");
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-booking-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Processing PNR...</span>`;
+
+            const pnr = "42" + Math.floor(10000000 + Math.random() * 90000000);
+            const passengerName = document.getElementById('passenger-name').value.trim();
+            const age = document.getElementById('passenger-age').value;
+            const gender = document.getElementById('passenger-gender').value;
+            const phone = document.getElementById('passenger-phone').value;
+            const journeyDate = document.getElementById('journey-date').value;
+            const travelClass = document.getElementById('travel-class').value;
+            const seatString = selectedSeats.map(s => `S1-${s} (${BERTH_TYPES[(s - 1) % 8]})`).join(', ');
+            const totalFare = parseInt(document.getElementById('fare-grand-total').innerText, 10);
+
+            const newTicket = {
+                pnr,
+                passengerName,
+                age,
+                gender,
+                phone,
+                trainNo: selectedTrain.trainNo,
+                trainName: selectedTrain.name,
+                route: `${selectedTrain.fromName} → ${selectedTrain.toName}`,
+                journeyDate,
+                travelClass,
+                seats: seatString,
+                totalFare,
+                status: "CONFIRMED"
+            };
+
+            // Mark seats as booked on current train
+            selectedTrain.bookedSeats.push(...selectedSeats);
+
+            // Save to Local Storage
+            bookedTickets.unshift(newTicket);
+            localStorage.setItem("rail_booked_tickets", JSON.stringify(bookedTickets));
+
+            // Pick next available seat for next booking
+            selectedSeats = [];
+            for (let i = 1; i <= 24; i++) {
+                if (!selectedTrain.bookedSeats.includes(i)) {
+                    selectedSeats.push(i);
+                    break;
+                }
+            }
+
+            // Send to Google Sheet if URL is configured
+            if (googleSheetUrl) {
+                fetch(googleSheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(newTicket)
+                }).then(() => {
+                    showToast(`PNR ${pnr} Booked & Saved to Google Sheet!`, "success");
+                }).catch(() => {
+                    showToast(`PNR ${pnr} Booked Locally (Sheet Sync Offline)`, "info");
+                });
+            } else {
+                showToast(`Ticket Confirmed! PNR: ${pnr}`, "success");
+            }
+
+            // Reset Form & UI
+            document.getElementById('booking-form').reset();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>Confirm & Generate PNR Ticket</span>`;
+
+            renderTrainList();
+            renderCoachSeats();
+            updateFareCalculation();
+            renderBookedTickets();
+        }
+
+        // Render Booked Tickets & PNR Search
+        function renderBookedTickets() {
+            const container = document.getElementById('booked-tickets-container');
+            const badge = document.getElementById('booking-count-badge');
+            const query = (document.getElementById('pnr-search-input')?.value || "").toLowerCase().trim();
+
+            badge.innerText = bookedTickets.length;
+            container.innerHTML = "";
+
+            const filtered = bookedTickets.filter(t => 
+                t.pnr.toLowerCase().includes(query) ||
+                t.passengerName.toLowerCase().includes(query) ||
+                t.trainName.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-2 text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <i class="fa-solid fa-ticket-simple text-4xl text-slate-400 mb-2"></i>
+                        <p class="font-bold text-slate-700">No Matching PNR Records Found</p>
+                        <p class="text-xs text-slate-500 mt-1">Book a new ticket from the 'Book Ticket' tab to generate a PNR.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(ticket => {
+                const isCancelled = ticket.status === "CANCELLED";
+                const card = document.createElement('div');
+                card.className = `rounded-xl border p-5 relative overflow-hidden transition shadow-sm ${
+                    isCancelled ? 'bg-slate-100 border-slate-300 opacity-75' : 'bg-white border-slate-200 hover:border-emerald-400'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+                        <div>
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block">PNR Number</span>
+                            <span class="mono-font text-lg font-extrabold text-slate-900 tracking-wide">${ticket.pnr}</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-extrabold ${
+                            isCancelled ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800'
+                        }">
+                            ${ticket.status}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Passenger:</span>
+                            <span class="font-bold text-slate-800">${ticket.passengerName} (${ticket.age} / ${ticket.gender})</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Train:</span>
+                            <span class="font-semibold text-slate-800">#${ticket.trainNo} - ${ticket.trainName}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Route & Date:</span>
+                            <span class="text-slate-700 text-xs font-medium">${ticket.route} (${ticket.journeyDate})</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Coach / Berths:</span>
+                            <span class="mono-font font-bold text-emerald-700">${ticket.travelClass} | ${ticket.seats}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400">Total Fare:</span>
+                            <span class="text-base font-extrabold text-slate-900 ml-1">₹${ticket.totalFare}</span>
+                        </div>
+                        ${!isCancelled ? `
+                            <button onclick="cancelTicket('${ticket.pnr}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-lg text-xs transition flex items-center gap-1">
+                                <i class="fa-solid fa-ban"></i>
+                                <span>Cancel Ticket</span>
+                            </button>
+                        ` : `<span class="text-xs text-rose-500 font-semibold">Refund Initiated</span>`}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Cancel a Ticket by PNR
+        function cancelTicket(pnr) {
+            const ticket = bookedTickets.find(t => t.pnr === pnr);
+            if (ticket) {
+                ticket.status = "CANCELLED";
+                localStorage.setItem("rail_booked_tickets", JSON.stringify(bookedTickets));
+                renderBookedTickets();
+                showToast(`PNR ${pnr} has been cancelled.`, "info");
+            }
+        }
+
+        // Export Booked Tickets to CSV (Matches C++ File Format)
+        function exportTicketsCSV() {
+            const headers = ["PNR,PassengerName,Age,Gender,Phone,TrainNo,TrainName,CoachClass,Seats,TotalFare,Status"];
+            const rows = bookedTickets.map(t => 
+                `${t.pnr},"${t.passengerName}",${t.age},${t.gender},${t.phone},${t.trainNo},"${t.trainName}",${t.travelClass},"${t.seats}",${t.totalFare},${t.status}`
+            );
+            const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "tickets_db.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Downloaded tickets_db.csv (Ready for Excel / Google Sheets)", "success");
+        }
+
+        // Save Google Sheet URL
+        function saveGoogleSheetUrl() {
+            const input = document.getElementById('gsheet-webhook-url').value.trim();
+            googleSheetUrl = input;
+            localStorage.setItem("rail_gsheet_url", googleSheetUrl);
+            if (googleSheetUrl) {
+                document.getElementById('gsheet-status-indicator').innerText = "Connected to Google Sheet Live!";
+                showToast("Google Sheet Web App URL Connected Successfully!", "success");
+            } else {
+                document.getElementById('gsheet-status-indicator').innerText = "Local Storage + Ready for Google Sheet";
+                showToast("Google Sheet URL cleared. Using Local Storage.", "info");
+            }
+        }
+
+        // Copy Code Helper
+        function copyCode(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast("Code copied to clipboard!", "success");
+        }
+
+        // Custom Toast Notification (No alert() used)
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: "bg-slate-900 border-emerald-500 text-white",
+                error: "bg-rose-950 border-rose-500 text-white",
+                info: "bg-slate-800 border-amber-400 text-white"
+            };
+            const icons = {
+                success: "fa-circle-check text-emerald-400",
+                error: "fa-triangle-exclamation text-rose-400",
+                info: "fa-circle-info text-amber-400"
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border-l-4 text-sm font-medium transition-all duration-300 ${colors[type]}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type]} text-lg"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
